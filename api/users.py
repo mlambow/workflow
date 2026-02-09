@@ -5,6 +5,7 @@ from models.user import User
 from sqlalchemy.orm import Session
 from datetime import datetime
 from core.security import hash_password
+from core.deps import get_current_user
 
 router = APIRouter(prefix='/users', tags=['users'])
 
@@ -22,3 +23,7 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
     db.refresh(user)
 
     return user
+
+@router.get('/me', response_model=UserRead)
+def read_me(current_user: User = Depends(get_current_user)):
+    return current_user
