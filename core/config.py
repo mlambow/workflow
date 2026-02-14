@@ -6,7 +6,7 @@ load_dotenv()
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:postgres5432@localhost:5432/workflow_app"
+    "postgresql://postgres:postgres5432@localhost:5432/workflow"
 )
 
 SECRET_KEY = "CHANGE_ME_IN_PROD"

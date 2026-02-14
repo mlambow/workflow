@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime
 from core.security import hash_password
 from core.deps import get_current_user
+from models.enum import UserRole
 
 router = APIRouter(prefix='/users', tags=['users'])
 
@@ -14,7 +15,7 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
     user = User(
         email = payload.email,
         hashed_password = hash_password(payload.password),
-        role = payload.role,
+        role = UserRole.USER,
         created_at = datetime.utcnow()
     )
 

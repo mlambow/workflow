@@ -1,6 +1,7 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from uuid import UUID
 from datetime import datetime
+from models.enum import UserRole
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -10,8 +11,8 @@ class UserCreate(BaseModel):
 class UserRead(BaseModel):
     id: UUID
     email: EmailStr
-    role: str
+    role: UserRole
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        model_config = ConfigDict(from_attributes=True)
