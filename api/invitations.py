@@ -162,7 +162,8 @@ def accept_invitation(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    invitation = db.query(ProjectInvitation).filter(
+    invitation = db.query(ProjectInvitation, Project).join(
+        Project, Project.id == ProjectInvitation.project_id).filter(
         ProjectInvitation.token == token
     ).first()
 
@@ -219,14 +220,30 @@ def accept_invitation(
     db.commit()
     db.refresh(membership)
 
-    return membership
+    response = []
+
+    for member, project in membership:
+        response.append({
+            "message": "You have successfully accepted an invitation",
+            "id": member.id,
+            "project_id": project.id,
+            "project_name": project.name,
+            "token": member.token,
+            "email": member.email,
+            "role": member.role,
+            "status": member.status,
+            "invited_by": member.invited_by,
+            "created_at": member.created_at
+        })
+
+    return response
 
 @router.post('/revoke/{token}', status_code=status.HTTP_200_OK)
 def revoke_invitation(
     token: str,
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user),
-):  
+    current_user = Depends(get_current_user)
+):
     #ensure the user revoking is the sender
     invitation = db.query(ProjectInvitation).filter(
         ProjectInvitation.token == token,
@@ -252,6 +269,43 @@ def revoke_invitation(
     db.refresh(invitation)
     
     return f'You have successfully revoked an invitation for {invitation.email}'
+
+@router.post('/resend/{token}', status_code=status.HTTP_201_CREATED)
+def resend_invitation(
+    token: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    invitation = db.query(ProjectInvitation).filter(
+        ProjectInvitation.token == token,
+        ProjectInvitation.invited_by == current_user.id
+    ).first()
+
+    if not invitation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Invitation is invalid'
+        )
+    
+    if invitation.invited_by != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Unauthorised user'
+        )
+    
+    if invitation.status != InvitationStatus.REVOKED:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Invitation is not revoked'
+        )
+    
+    invitation.status = InvitationStatus.PENDING
+
+    db.add(invitation)
+    db.commit()
+    db.refresh(invitation)
+
+    return f'You have successfully resent a revoked invitation to {invitation.email}'
 
 @router.post('/reject/{token}', status_code=status.HTTP_200_OK)
 def reject_invitation(
@@ -283,3 +337,32 @@ def reject_invitation(
     db.commit()
 
     return f'Invitation for {invitation.project_id} has been successfully rejected'
+
+@router.delete('/delete/{token}', status_code=status.HTTP_204_NO_CONTENT)
+def delete_invitation(
+    token: str,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    invitation = db.query(ProjectInvitation).filter(
+        ProjectInvitation.token == token,
+        ProjectInvitation.invited_by == current_user.id
+    ).first()
+
+    if not invitation:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Invitation not found'
+        )
+    
+    if invitation.invited_by != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Unauthorised user'
+        )
+
+    db.delete(invitation)
+    db.commit()
+
+    return f"You have successfully deleted an invitation that belongs to {invitation.email}"
+    

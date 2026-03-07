@@ -26,3 +26,9 @@ class Project(Base):
 
     owner = relationship('User', back_populates='projects')
     workflow = relationship('Workflow', back_populates='project')
+    memberships = relationship("ProjectMembership", back_populates="project", cascade="all, delete-orphan")
+    invitations = relationship(
+        "ProjectInvitation",
+        back_populates="project",
+        cascade="all, delete-orphan"
+    )
