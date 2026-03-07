@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import String, DateTime, Enum as SQLEnum
+from sqlalchemy import String, DateTime, Boolean, Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
@@ -26,3 +26,8 @@ class User(Base):
     )
 
     projects = relationship('Project', back_populates='owner')
+    tasks = relationship("Task", back_populates="assignee")
+    invitations_sent = relationship(
+        "ProjectInvitation",
+        back_populates="sender"
+    )

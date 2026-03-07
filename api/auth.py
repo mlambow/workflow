@@ -8,7 +8,7 @@ from db.deps import get_db
 from models.user import User
 from core.security import verify_password
 from core.jwt import create_access_token
-from core.config import ACCESS_TOKEN_EXPIRE_MINUTES
+from db.session import ACCESS_TOKEN_EXPIRE_MINUTES
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 

@@ -2,7 +2,7 @@ import uuid
 import getpass
 from db.session import SessionLocal
 from models.user import User
-from core.security import get_password_hash
+from core.security import hash_password
 
 
 def create_admin():
@@ -27,7 +27,7 @@ def create_admin():
         admin = User(
             id=uuid.uuid4(),
             email=email,
-            hashed_password=get_password_hash(password),
+            hashed_password=hash_password(password),
             role="ADMIN"
         )
 

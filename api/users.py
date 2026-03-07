@@ -28,3 +28,9 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
 @router.get('/me', response_model=UserRead)
 def read_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+@router.get('/', status_code=status.HTTP_200_OK)
+def get_users(db: Session = Depends(get_db)):
+    users = db.query(User).all()
+
+    return users

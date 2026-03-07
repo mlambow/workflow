@@ -30,5 +30,9 @@ class Task(Base):
         ForeignKey("workflow_stages.id"),
         nullable=False
     )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
 
     stage = relationship("WorkflowStage", back_populates="tasks")
+    assignee = relationship('User', back_populates='tasks')

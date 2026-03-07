@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from jose import jwt
-from core.config import SECRET_KEY, ALGORITHM
+from db.session import SECRET_KEY, ALGORITHM
 
 def create_access_token(data: dict, expires_delta:timedelta):
     to_encode = data.copy()
