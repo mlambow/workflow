@@ -4,6 +4,7 @@ from api.users import router as users_router
 from api.auth import router as auth_router
 from api.projects import router as project_router
 from api.invitations import router as invitation_router
+from api.workflows import router as workflow_router
 from db.session import engine
 from db.base import Base
 
@@ -19,3 +20,4 @@ app.include_router(users_router)
 app.include_router(auth_router)
 app.include_router(project_router)
 app.include_router(invitation_router)
+app.include_router(workflow_router)

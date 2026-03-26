@@ -9,8 +9,10 @@ from models.project import Project
 from models.user import User
 from models.project_membership import ProjectMembership, ProjectRole
 from models.project_invitation import ProjectInvitation
-from dependencies.project_permissions import require_create_members
+from models.workflow import Workflow
+from dependencies.project_permissions import require_create_members, get_project_memberships, require_project_member
 from schemas.project import ProjectCreate, ProjectRead
+from schemas.workflow import WorkflowCreate, WorkflowRead
 
 router = APIRouter(prefix='/projects', tags=['projects'])
 
@@ -41,7 +43,7 @@ def create_project(
 
     return project
 
-@router.get("/", response_model=list[ProjectRead])
+@router.get("/", response_model=list[ProjectRead], status_code=status.HTTP_200_OK)
 def get_projects(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -61,7 +63,6 @@ def get_projects(
 
     return projects
 
-
 def get_my_project(
     project_id: UUID,
     db: Session,
@@ -70,10 +71,16 @@ def get_my_project(
     project = db.query(Project).filter(Project.id == project_id).first()
 
     if not project:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Project not found'
+        )
     
     if project.owner_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='User not authorised'
+        )
     
     return project
 
@@ -199,3 +206,68 @@ def remove_member(
         "message": 'You have successfully removed a member',
         "data": response
     }
+
+@router.post('/{project_id}/workflows', response_model=WorkflowRead, status_code=status.HTTP_201_CREATED)
+def create_workflow(
+    project_id: UUID,
+    payload: WorkflowCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    project = db.query(Project).filter(
+        Project.id == project_id,
+        Project.owner_id == current_user.id
+    ).first()
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Project not found'
+        )
+
+    membership = db.query(ProjectMembership).filter(
+        ProjectMembership.project_id == project.id,
+        ProjectMembership.user_id == current_user.id,
+    ).first()
+
+    if not membership or membership.role != ProjectRole.PROJECT_ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='User forbidden. Only project admin can create a worrkflow'
+        )
+
+    workflow = Workflow(
+        name=payload.name,
+        project_id=project.id,
+        created_by=current_user.id
+    )
+
+    db.add(workflow)
+    db.commit()
+    db.refresh(workflow)
+
+    return workflow
+
+@router.get('/{project_id}/workflows', response_model=list[WorkflowRead], status_code=status.HTTP_200_OK)
+def get_workflows(
+    project_id: UUID,
+    project = Depends(require_project_member),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    member = db.query(ProjectMembership).filter(
+        ProjectMembership.project_id == project.id,
+        ProjectMembership.user_id == current_user.id
+    ).first()
+
+    if not member:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail='Forbidden to get workflows'
+        )
+    
+    workflow = db.query(Workflow).filter(
+        Workflow.project_id == project_id
+    ).all()
+
+    return workflow
