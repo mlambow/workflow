@@ -1,12 +1,6 @@
 import { Pencil, Plus, Share2Icon, Trash2, Users, X } from "lucide-react";
 import ActionButton from "../ActionButton";
-
-type Project = { 
-    id: string; 
-    name: string; 
-    description: string; 
-    owner_id: string 
-};
+import type { Project } from "~/lib/types";
 
 type ProjectOptionsModalProps = {
   open: boolean;
@@ -14,6 +8,7 @@ type ProjectOptionsModalProps = {
   onEdit?: () => void;
   onShare?: () => void;
   //onDelete?: () => void;
+  //onViewMembers?: () => void;
   onCreateWorkflow?: () => void;
   project: Project | null
 };
@@ -25,6 +20,7 @@ export default function ProjectOptionsModal({
   onEdit,
   onShare,
   //onDelete,
+  //onViewMembers
   onCreateWorkflow,
 }: ProjectOptionsModalProps) {
   if (!open) return null;
@@ -67,11 +63,11 @@ export default function ProjectOptionsModal({
               label="Project Members"
             />
 
-            <ActionButton
+            {/* {member?.role === 'Project Admin' && <ActionButton
               icon={Pencil}
               label="Edit Project"
               onClick={onEdit}
-            />
+            />} */}
 
             <ActionButton
               icon={Share2Icon}

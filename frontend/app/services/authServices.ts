@@ -1,12 +1,5 @@
 import { authFetch } from "~/helpers/authHelper";
-
-export type User = {
-  id: string;
-  first_name: string;
-  last_name: string;
-  role: string;
-  created_at: string;
-};
+import type { User } from "~/lib/types";
 
 const BASE_URL = "http://127.0.0.1:8000";
 
@@ -29,4 +22,4 @@ export async function fetchCurrentUser(): Promise<User> {
   }
   
   return res.json();
-}
+};

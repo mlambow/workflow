@@ -120,8 +120,6 @@ export default function DashboardPage() {
               ) : (
                 <ProjectList
                   projects={project}
-                  onRenameProject={handleUpdateProjectName}
-                  onDeleteTrigger={(target) => setProjectToDelete(target)}
                 />
               )
             }

@@ -82,7 +82,7 @@ export default function UpdateProjectModal({
             <textarea
               id="modal-p-desc"
               rows={3}
-              placeholder="Provide clean explicit metadata rules tracking guidelines..."
+              placeholder="Provide clean explicit description for you project."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/60 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:border-blue-500 dark:focus:border-blue-500/60 transition-colors resize-none"

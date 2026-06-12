@@ -76,14 +76,14 @@ def create_admin_users(
             detail="You can not promote yourself"
         )
     
-    user.role = UserRole.ADMIN
-
     if user.role == UserRole.SUPER_ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='You can not promote to Super Admin'
         )
     
+    user.role = UserRole.ADMIN
+
     db.commit()
     db.refresh(user)
 

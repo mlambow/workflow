@@ -1,21 +1,12 @@
 import { useNavigate } from "react-router";
 import BoardCard from "./BoardCard";
-
-type Project = {
-  id: string;
-  name: string;
-  description: string;
-  owner_id: string;
-  created_at: string;
-};
+import type { Project } from "~/lib/types";
 
 type Props = {
   projects: Project[];
-  onRenameProject: (id: string, updatedName: string) => Promise<void>;
-  onDeleteTrigger: (project: Project) => void;
 };
 
-export function ProjectList({ projects, onRenameProject, onDeleteTrigger }: Props) {
+export function ProjectList({ projects }: Props) {
   const navigate = useNavigate();
 
   const gradients = [
@@ -34,8 +25,6 @@ export function ProjectList({ projects, onRenameProject, onDeleteTrigger }: Prop
           title={project.name}
           gradientClass={gradients[index % gradients.length]}
           onNavigate={() => navigate(`/projects/${project.id}`)}
-          onRename={(newName) => onRenameProject(project.id, newName)}
-          onDelete={() => onDeleteTrigger(project)}
         />
       ))}
     </>

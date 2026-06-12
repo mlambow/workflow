@@ -36,28 +36,6 @@ export default function WorkflowSelector({ workflows, activeId, onSelect, onCrea
           {wf.name}
         </button>
       ))}
-
-      {!isCreating ? (
-        <button
-          onClick={() => setIsCreating(true)}
-          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900/60 border border-dashed border-slate-700 text-slate-400 hover:text-white transition-all"
-        >
-          + New Workflow
-        </button>
-      ) : (
-        <form onSubmit={handleSubmit} className="flex items-center gap-1.5">
-          <input
-            type="text"
-            autoFocus
-            placeholder="Workflow title..."
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="bg-slate-900 border border-blue-500 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none"
-          />
-          <button type="submit" className="bg-blue-600 text-white px-2 py-1 text-xs rounded-lg">Save</button>
-          <button type="button" onClick={() => setIsCreating(false)} className="text-slate-400 text-xs px-1">Cancel</button>
-        </form>
-      )}
     </div>
   );
 }

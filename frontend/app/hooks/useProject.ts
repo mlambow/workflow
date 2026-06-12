@@ -6,8 +6,7 @@ export function useProject(projectId?: string) {
   const [project, setProject] = useState<Project | null>(null);
 
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
-  const [activeWorkflow, setActiveWorkflow] =
-    useState<Workflow | null>(null);
+  const [activeWorkflow, setActiveWorkflow] = useState<Workflow | null>(null);
 
   const [stages, setStages] = useState<WorkflowStage[]>([]);
 

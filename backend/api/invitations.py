@@ -121,55 +121,62 @@ def get_member_invitations(
 
     return response
 
-@router.post('/invite', response_model=InvitationResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/invite", response_model=InvitationResponse, status_code=status.HTTP_201_CREATED)
 def create_invitation(
     payload: InviteRequest,
-    project = Depends(require_project_admin),
-    current_user = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    project: Project = Depends(require_project_admin),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    #Ensure project exists
+    # Ensure project exists
     project = db.query(Project).filter(Project.id == project.id).first()
 
     if not project:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Project not found."
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found.",
         )
 
-    #check if the current user is a project admin
-    membership = db.query(ProjectMembership).filter(
-        ProjectMembership.project_id == project.id,
-        ProjectMembership.user_id == current_user.id,
-    ).first()
+    # Ensure current user is a project admin
+    membership = (
+        db.query(ProjectMembership)
+        .filter(
+            ProjectMembership.project_id == project.id,
+            ProjectMembership.user_id == current_user.id,
+        )
+        .first()
+    )
 
     if not membership or membership.role != ProjectRole.PROJECT_ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail='User forbidden to invite members'
+            detail="User forbidden to invite members",
         )
 
-    #check if the email already has membership
-    existing_email = (
-        db.query(ProjectMembership).join(
-        User, User.id == ProjectMembership.user_id).filter(
-            ProjectMembership.project_id == project.id, 
-            User.email == payload.email).first()
+    # Check if user is already a member
+    existing_member = (
+        db.query(ProjectMembership)
+        .join(User, User.id == ProjectMembership.user_id)
+        .filter(
+            ProjectMembership.project_id == project.id,
+            User.email == payload.email,
+        )
+        .first()
     )
 
-    if existing_email:
+    if existing_member:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail='User already a member'                
+            detail="User already a member",
         )
-    
-    #Check if invitation already exists
+
+    # Check for existing pending invitation
     existing_invite = (
         db.query(ProjectInvitation)
         .filter(
             ProjectInvitation.project_id == project.id,
             ProjectInvitation.email == payload.email,
-            ProjectInvitation.status == InvitationStatus.PENDING
+            ProjectInvitation.status == InvitationStatus.PENDING,
         )
         .first()
     )
@@ -177,22 +184,37 @@ def create_invitation(
     if existing_invite:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="An invitation has already been sent to this email."
+            detail="An invitation has already been sent to this email.",
         )
-    
+
+    # Create invitation
     invitation = ProjectInvitation(
         project_id=project.id,
         email=payload.email,
         role=ProjectRole.MEMBER,
         invited_by=current_user.id,
         token=secrets.token_urlsafe(32),
-        expires_at=datetime.utcnow() + timedelta(days=7)
+        expires_at=datetime.utcnow() + timedelta(days=7),
     )
 
     db.add(invitation)
     db.commit()
     db.refresh(invitation)
-    return f"invitation sent successfully to {payload.email}"
+
+    return InvitationResponse(
+        id=invitation.id,
+        project_id=invitation.project_id,
+        project_name=project.name,
+        email=invitation.email,
+        role=invitation.role.value,
+        status=invitation.status.value,
+        token=invitation.token,
+        invited_by_name=current_user.email,  # or current_user.full_name
+        resent_at=invitation.resent_at,
+        created_at=invitation.created_at,
+        updated_at=invitation.updated_at,
+        expires_at=invitation.expires_at,
+    )
 
 @router.post('/accept/{token}', status_code=status.HTTP_200_OK)
 def accept_invitation(

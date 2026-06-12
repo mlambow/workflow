@@ -1,19 +1,10 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
 import { useAuth } from "~/context/AuthContext";
+import type { User } from "~/lib/types";
 import { fetchCurrentUser } from "~/services/authServices";
-
-type User = {
-  id: string;
-  first_name: string;
-  last_name: string;
-  role: string;
-  created_at: string;
-};
 
 export function useCurrentUser() {
   const [user, setUser] = useState<User | null>(null);
-  const navigate = useNavigate();
   const { logout } = useAuth();
 
   useEffect(() => {

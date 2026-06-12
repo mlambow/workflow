@@ -204,8 +204,8 @@ def view_members(
         for membership, user in members
     ]
 
-@router.delete('/{project_id}/members/{member_id}', status_code=status.HTTP_200_OK)
-def remove_member(
+@router.post('/{project_id}/member/{member_id}', status_code=status.HTTP_200_OK)
+def promote_member(
     member_id: UUID,
     project = Depends(require_create_members),
     db: Session = Depends(get_db),
@@ -233,10 +233,51 @@ def remove_member(
             detail='Member does not exist in the project'
         )
     
-    if member.role != ProjectRole.MEMBER:
+    if member.role == ProjectRole.PROJECT_ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Member is already a project admin'
+        )
+    
+    member.role = ProjectRole.PROJECT_ADMIN
+
+    db.commit()
+    db.refresh(member)
+
+    return {
+        "message": "Member promoted successfully",
+        "member_id": str(member.user_id),
+        "project_id": str(project.id),
+        "role": member.role.value
+    }
+
+@router.delete('/{project_id}/members/{member_id}', status_code=status.HTTP_200_OK)
+def remove_member(
+    member_id: UUID,
+    project = Depends(require_create_members),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    admin = db.query(ProjectMembership).filter(
+        ProjectMembership.project_id == project.id,
+        ProjectMembership.user_id == current_user.id
+    ).first()
+
+    if not admin or admin.role != ProjectRole.PROJECT_ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail='This member can not be removed'
+            detail='You are forbidden to remove a member from this project'
+        )
+    
+    member = db.query(ProjectMembership).filter(
+        ProjectMembership.project_id == project.id,
+        ProjectMembership.user_id == member_id
+    ).first()
+
+    if not member:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Member does not exist in the project'
         )
     
     user = db.query(User).filter(User.id == member_id).first()

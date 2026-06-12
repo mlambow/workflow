@@ -7,23 +7,15 @@ type BoardCardProps = {
   title: string;
   gradientClass: string;
   onNavigate: () => void;
-  onRename: (newName: string) => Promise<void>;
-  onDelete: () => void;
 };
 
-export default function BoardCard({ title, gradientClass, onNavigate, onRename, onDelete }: BoardCardProps) {
+export default function BoardCard({ title, gradientClass, onNavigate }: BoardCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [nameInput, setNameInput] = useState(title);
   const { isAdmin } = useProject()
 
   const handleSaveSubmit = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Stop clicking "Save" from launching the parent card's navigation link
-    if (!nameInput.trim() || nameInput.trim() === title) {
-      setIsEditing(false);
-      return;
-    }
-    await onRename(nameInput.trim());
-    setIsEditing(false);
+    
   };
 
   return (
@@ -54,31 +46,6 @@ export default function BoardCard({ title, gradientClass, onNavigate, onRename, 
           </h3>
         )}
       </div>
-
-      {/* Inline Quick-Action Controls (Fades into view on Hover) */}
-      {!isEditing && (
-        <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <button
-            onClick={(e) => {
-              e.stopPropagation(); // Avoid navigating into board path route
-              setIsEditing(true);
-            }}
-            className="text-[11px] font-semibold cursor-pointer text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400"
-          >
-            Rename
-          </button>
-          <span className="text-slate-200 dark:text-slate-800 text-[10px]">|</span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation(); // Avoid navigating into board path route
-              onDelete();
-            }}
-            className="text-[11px] font-semibold cursor-pointer text-rose-500/70 hover:text-rose-500"
-          >
-            Delete
-          </button>
-        </div>
-      )}
     </motion.div>
   );
 }

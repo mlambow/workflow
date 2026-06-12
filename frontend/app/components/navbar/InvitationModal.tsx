@@ -1,6 +1,6 @@
 import ModalShell from "./ModalShell";
 import { InvitationCard } from "./InvitationCard";
-import type { Invitation } from "~/services/invitationServces";
+import type { Invitation } from "~/lib/types"
 
 type Props = {
   open: boolean;

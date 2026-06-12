@@ -1,20 +1,5 @@
 import { authFetch } from "~/helpers/authHelper";
 
-export type Invitation = {
-  id: string;
-  project_id: string;
-  project_name: string;
-  email: string;
-  role: string;
-  status: string;
-  token: string;
-  invited_by_name: string;
-  resent_at: string;
-  created_at: string;
-  expires_at: string;
-  updated_at: string;
-};
-
 const BASE_URL = "http://127.0.0.1:8000";
 
 //Fetch reveiced invitation
