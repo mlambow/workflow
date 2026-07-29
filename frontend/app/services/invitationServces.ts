@@ -104,7 +104,7 @@ export const deleteInvitation = async (token: string) => {
 
 //Fetch group invitation
 export const fetchGroupInvitations = async () => {
-  const response = await authFetch(`${BASE_URL}/invitations`, {
+  const response = await authFetch(`${BASE_URL}/invitations/`, {
     method: "GET",
   });
 

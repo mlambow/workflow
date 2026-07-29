@@ -53,7 +53,7 @@ def create_invitation(
         token=token,
         status=InvitationStatus.PENDING,
         invited_by=current_user.id,
-        expires_at=datetime.utcnow() + timedelta(hours=INVITATION_EXPIRATION_HOURS)
+        expires_at=datetime.now(timezone.utc)() + timedelta(hours=INVITATION_EXPIRATION_HOURS)
     )
 
     db.add(invitation)

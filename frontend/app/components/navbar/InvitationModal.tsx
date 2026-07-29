@@ -8,7 +8,7 @@ type Props = {
   title: string;
   subtitle: string;
   invitations: Invitation[];
-  view: "received" | "sent";
+  view: "Project Admin" | "Member";
 
   onAccept?: (token: string) => Promise<void>;
   onReject?: (token: string) => Promise<void>;
@@ -32,7 +32,7 @@ export default function InvitationModal({
       onClose={onClose}
       title={title}
       subtitle={subtitle}
-      maxWidth={view === "sent" ? "max-w-xl" : "max-w-md"}
+      maxWidth={view === "Project Admin" ? "max-w-xl" : "max-w-md"}
     >
       <div className="space-y-3">
         {invitations.map((invitation) => (

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import type { Invitation } from "~/services/invitationServces";
+import type { Invitation } from "~/lib/types";
 import {
   fetchUserInvitation,
   fetchGroupInvitations,
@@ -41,9 +41,6 @@ export function useInvitations() {
     refreshGroupInvitations();
   }, [refreshInvitations, refreshGroupInvitations]);
 
-  // -----------------------------
-  // Shared helper for loading state
-  // -----------------------------
   const withProcessing = useCallback(
     async (token: string, fn: () => Promise<void>) => {
       setProcessingToken(token);
@@ -58,9 +55,6 @@ export function useInvitations() {
     []
   );
 
-  // -----------------------------
-  // Received invitations
-  // -----------------------------
   const accept = useCallback(
     (token: string) =>
       withProcessing(token, async () => {
@@ -93,9 +87,6 @@ export function useInvitations() {
     [withProcessing]
   );
 
-  // -----------------------------
-  // Group / sent invitations
-  // -----------------------------
   const revoke = useCallback(
     (token: string) =>
       withProcessing(token, async () => {
@@ -140,9 +131,6 @@ export function useInvitations() {
     [withProcessing]
   );
 
-  // -----------------------------
-  // Derived values (clean UI helpers)
-  // -----------------------------
   const visibleGroupInvitations = groupInvitations.filter(
     (inv) => inv.status !== "ACCEPTED"
   );

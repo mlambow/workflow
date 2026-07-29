@@ -12,6 +12,7 @@ export default function InviteMemberModal({ projectId, onClose }: Props) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [status, setStatus] = useState<'success' | 'error' | 'idle' | string>('idle')
 
   const handleInviteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

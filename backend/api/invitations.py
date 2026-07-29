@@ -35,8 +35,6 @@ def get_invitations(
 
     query = db.query(ProjectInvitation).options(
         joinedload(ProjectInvitation.project)
-    ).filter(
-        ProjectInvitation.invited_by == current_user.id
     ).order_by(desc(ProjectInvitation.created_at))
 
     if status_filter:
@@ -49,10 +47,26 @@ def get_invitations(
             status_code=status.HTTP_404_NOT_FOUND,
             detail='You currently do not have any invitations sent out'
         )
+    
+    now = datetime.now(timezone.utc)
 
     response = []
 
     for invitation in invitations:
+        for invitation in invitations:
+            status = invitation.status
+
+            expires_at = invitation.expires_at
+
+            if expires_at.tzinfo is None:
+                expires_at = expires_at.replace(tzinfo=timezone.utc)
+
+        if (
+            status == InvitationStatus.PENDING
+            and expires_at < now
+        ):
+            status = InvitationStatus.EXPIRED
+
         response.append({
             "id": invitation.id,
             "project_id": invitation.project.id,
@@ -67,7 +81,8 @@ def get_invitations(
             "updated_at": invitation.updated_at,
             "expires_at": invitation.expires_at
         })
-
+    print(invitation.expires_at)
+    print(invitation.expires_at.tzinfo)
     return response
 
 @router.get('/received', response_model=list[InvitationResponse], status_code=status.HTTP_200_OK)
@@ -194,7 +209,7 @@ def create_invitation(
         role=ProjectRole.MEMBER,
         invited_by=current_user.id,
         token=secrets.token_urlsafe(32),
-        expires_at=datetime.utcnow() + timedelta(days=7),
+        expires_at=datetime.now(timezone.utc) + timedelta(days=7),
     )
 
     db.add(invitation)
@@ -209,7 +224,7 @@ def create_invitation(
         role=invitation.role.value,
         status=invitation.status.value,
         token=invitation.token,
-        invited_by_name=current_user.email,  # or current_user.full_name
+        invited_by_name=current_user.email,
         resent_at=invitation.resent_at,
         created_at=invitation.created_at,
         updated_at=invitation.updated_at,
@@ -250,8 +265,12 @@ def accept_invitation(
             detail='Invitation already processed'
         )
     
-    # Using timezone-aware comparison if applicable, or keep utcnow() if database is naive
-    if invitation.expires_at < datetime.utcnow():
+    expires_at = invitation.expires_at
+
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    
+    if expires_at < datetime.now(timezone.utc):
         invitation.status = InvitationStatus.EXPIRED
         db.commit()
         raise HTTPException(
@@ -288,7 +307,6 @@ def accept_invitation(
     db.commit()
     db.refresh(membership)
 
-    # 3. Construct the response directly without the broken loop
     return {
         "message": "You have successfully accepted an invitation",
         "id": membership.id,
@@ -363,7 +381,7 @@ def resend_invitation(
         )
 
     invitation.status = InvitationStatus.PENDING
-    invitation.resent_at = datetime.utcnow()
+    invitation.resent_at = datetime.now(timezone.utc)
 
     db.commit()
     db.refresh(invitation)

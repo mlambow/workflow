@@ -16,7 +16,6 @@ const ROLE_THEMES: Record<string, string> = {
   VIEWER: "bg-sky-500/10 text-sky-500 dark:text-sky-400 border border-sky-500/20",
 };
 
-// 2. Component Type Definitions
 interface Invitation {
   id: string;
   project_name: string;
@@ -29,7 +28,7 @@ interface Invitation {
   expires_at: string;
   updated_at: string;
 
-  view: 'sent' | 'received'
+  view: 'Project Admin' | 'Member'
 }
 
 interface InvitationCardProps {
@@ -93,7 +92,7 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({
 
   return (
     <motion.div
-      layout // Smoothly morphs/slides list layouts when items are deleted
+      layout
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
@@ -130,7 +129,7 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({
             {invitation.email}
           </span>
         </div>
-        {invitation.view === "received" && (
+        {invitation.view === "Member" && (
           <>
             <div className="flex justify-between items-center">
               <span>Invited by</span>
@@ -155,7 +154,7 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({
           </>
         )}
 
-        {invitation.view === "sent" &&
+        {invitation.view === "Project Admin" &&
           ["Revoked", "Rejected"].includes(invitation.status) && (
             <div className="flex justify-between items-center">
               <span>
@@ -185,7 +184,7 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({
 
       {/* Clean Dynamic Action Controls */}
       <div className="flex gap-2 mt-4">
-        {invitation.view === "received" && invitation.status === "Pending" && (
+        {invitation.view === "Member" && invitation.status === "Pending" && (
           <>
             <button
               onClick={() => onAccept && handleAction("accept", onAccept)}
@@ -205,7 +204,7 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({
           </>
         )}
 
-        {invitation.view === "sent" && (
+        {invitation.view === "Project Admin" && (
           <>
             {invitation.status === "Pending" && (
               <>
@@ -219,7 +218,7 @@ export const InvitationCard: React.FC<InvitationCardProps> = ({
               </>
             )}
 
-            {["Revoked", "Rejected"].includes(invitation.status) && (
+            {["Revoked", "Rejected", "Expired"].includes(invitation.status) && (
               <>
                 <button
                   onClick={() => onResend && handleAction("resend", onResend)}
